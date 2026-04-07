@@ -1,0 +1,15 @@
+# Force Rebuild 3
+fastapi
+uvicorn
+sqlmodel
+psycopg2-binary
+pgvector
+python-multipart
+python-jose[cryptography]
+passlib[bcrypt]
+pytesseract
+Pillow
+pypdf
+python-docx
+groq
+reportlab

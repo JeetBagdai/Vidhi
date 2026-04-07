@@ -1,0 +1,85 @@
+# Vidhi Platform - Setup and Execution Procedure
+
+This document provides the necessary steps to set up and run the Vidhi platform locally.
+
+## Prerequisite Tools
+- **Docker & Docker Compose** (Recommended for easiest setup)
+- **Node.js** (v18+) and **npm** (for local frontend development)
+- **Python 3.10+** (for local backend development)
+- **PostgreSQL** with `pgvector` extension (if running locally without Docker)
+
+---
+
+## 1. Quick Start with Docker (Recommended)
+
+The easiest way to run the entire platform is using Docker Compose. This starts the database, backend, and frontend containers automatically.
+
+1. Open a terminal in the project root directory.
+2. Run the following command:
+   ```bash
+   docker-compose up --build
+   ```
+3. Once the build is complete and containers are running:
+   - **Frontend:** http://localhost:3000
+   - **Backend API:** http://localhost:8000
+   - **API Documentation:** http://localhost:8000/docs
+
+---
+
+## 2. Manual Local Setup (Development)
+
+If you prefer to run the services individually for development, follow these steps:
+
+### A. Database Setup
+1. Ensure PostgreSQL is installed and running.
+2. Install the `pgvector` extension.
+3. Create a database named `vidhi_db`.
+4. Create a user `vidhi_user` with password `vidhi_password`.
+
+### B. Backend Setup
+1. Navigate to the `backend` directory:
+   ```bash
+   cd backend
+   ```
+2. Create and activate a virtual environment:
+   ```bash
+   python -m venv venv
+   # Windows
+   .\venv\Scripts\activate
+   # Linux/macOS
+   source venv/bin/activate
+   ```
+3. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+4. Configure environment variables (you can create a `.env` file):
+   - `DATABASE_URL=postgresql://vidhi_user:vidhi_password@localhost:5432/vidhi_db`
+   - `GROQ_API_KEY=your_api_key_here`
+5. Run the backend server:
+   ```bash
+   python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+   ```
+
+### C. Frontend Setup
+1. Navigate to the `frontend` directory:
+   ```bash
+   cd frontend
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Set the API environment variable (in `.env.local`):
+   - `NEXT_PUBLIC_API_URL=http://localhost:8000`
+4. Run the development server:
+   ```bash
+   npm run dev
+   ```
+
+---
+
+## 3. Verifying the Setup
+- Access the frontend at `http://localhost:3000`.
+- Verify the backend is responsive at `http://localhost:8000/docs`.
+- Check logs for any database connection errors or missing environment variables.
