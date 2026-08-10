@@ -1,5 +1,7 @@
 # ⚖️ Vidhi — AI-Powered Legal Learning & Intelligence Platform
 
+🚀 **Live Demo:** [https://vidhi-jb.vercel.app](https://vidhi-jb.vercel.app)
+
 **Vidhi** is an intelligent legal platform that empowers users to understand, analyse, and generate legal documents through AI-driven tools. The platform combines document analysis, automated contract generation, case simulation, and an interactive learning experience to make legal knowledge accessible.
 
 ---
