@@ -12,3 +12,6 @@ pypdf
 python-docx
 groq
 reportlab
+
+gunicorn
+psycopg2-binary
