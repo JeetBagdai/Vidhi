@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API = process.env.NEXT_PUBLIC_API_URL || 'https://vidhi-backend-4rfp.onrender.com';
 const LEVEL_BADGE: Record<string, string> = { Beginner: 'badge-green', Intermediate: 'badge-gold', Advanced: 'badge-red' };
 
 export default function LearnPage() {

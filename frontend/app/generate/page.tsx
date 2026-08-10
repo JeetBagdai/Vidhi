@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import Navbar from '../components/Navbar';
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API = process.env.NEXT_PUBLIC_API_URL || 'https://vidhi-backend-4rfp.onrender.com';
 const DOC_TYPES = [
   'Employment Agreement', 'Non-Disclosure Agreement (NDA)', 'Rental Agreement',
   'Service Agreement', 'Sale Deed', 'Partnership Agreement',

@@ -22,7 +22,7 @@ export default function LegalSearchPage() {
 
     const fetchActs = async () => {
         try {
-            const res = await fetch("http://localhost:8000/legal/acts?limit=20");
+            const res = await fetch("https://vidhi-backend-4rfp.onrender.com/legal/acts?limit=20");
             const data = await res.json();
             setActs(data);
         } catch (error) {

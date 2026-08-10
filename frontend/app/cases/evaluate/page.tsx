@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import Navbar from '../../components/Navbar';
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API = process.env.NEXT_PUBLIC_API_URL || 'https://vidhi-backend-4rfp.onrender.com';
 const DOMAINS = ['consumer', 'employment', 'criminal', 'family', 'contract', 'property', 'cyber', 'civil'];
 
 export default function CasePage() {

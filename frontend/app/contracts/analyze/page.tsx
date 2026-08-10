@@ -2,7 +2,7 @@
 import { useState, useRef } from 'react';
 import Navbar from '../../components/Navbar';
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API = process.env.NEXT_PUBLIC_API_URL || 'https://vidhi-backend-4rfp.onrender.com';
 
 interface FlaggedClause {
   clause_title: string; clause_excerpt: string;
