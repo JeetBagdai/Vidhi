@@ -44,7 +44,7 @@ def ask_gemini(prompt: str, system_extra: str = "") -> str:
                 {"role": "user", "content": prompt},
             ],
             temperature=0.3,
-            max_tokens=4096,
+            max_tokens=8000,
         )
         return response.choices[0].message.content
     except Exception as e:
@@ -73,7 +73,7 @@ def ask_gemini_chat(history: list, new_message: str, system_extra: str = "") -> 
             model=MODEL,
             messages=messages,
             temperature=0.3,
-            max_tokens=4096,
+            max_tokens=8000,
         )
         return response.choices[0].message.content
     except Exception as e:

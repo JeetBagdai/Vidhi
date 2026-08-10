@@ -1,8 +1,15 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
+from database import create_db_and_tables
 from routers import legal, cases, contracts, generate, chat, learn, mock_court
 
-app = FastAPI(title="Vidhi — Indian Legal Intelligence Platform", version="2.0.0")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    create_db_and_tables()
+    yield
+
+app = FastAPI(title="Vidhi — Indian Legal Intelligence Platform", version="2.0.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,

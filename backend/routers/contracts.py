@@ -17,16 +17,8 @@ async def analyze_contract(
     file: UploadFile = File(...),
     context: str = ""
 ):
-    # Save file temporarily
-    suffix = os.path.splitext(file.filename)[1]
-    with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
-        shutil.copyfileobj(file.file, tmp)
-        tmp_path = tmp.name
-
-    try:
-        text_content = parse_document(tmp_path, file.content_type or "")
-    finally:
-        os.unlink(tmp_path)
+    file_bytes = await file.read()
+    text_content = parse_document(file.filename, file_bytes)
 
     if not text_content or len(text_content.strip()) < 20:
         raise HTTPException(status_code=422, detail="Could not extract text from document.")

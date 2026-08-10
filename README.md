@@ -1,17 +1,17 @@
-# ⚖️ Vidhi — AI-Powered Legal Learning Platform
+# ⚖️ Vidhi — AI-Powered Legal Learning & Intelligence Platform
 
-**Vidhi** is an intelligent legal education platform that empowers users to understand, analyse, and engage with legal concepts through AI-driven tools. The platform combines document analysis, case simulation, and an interactive learning experience to make legal knowledge accessible.
+**Vidhi** is an intelligent legal platform that empowers users to understand, analyse, and generate legal documents through AI-driven tools. The platform combines document analysis, automated contract generation, case simulation, and an interactive learning experience to make legal knowledge accessible.
 
 ---
 
-## 🚀 Features
+## ✨ Features
 
-- 📄 **AI Document Analysis** — Upload and analyse legal contracts, agreements, and documents using LLM-powered insights (Groq API)
-- 🧠 **Legal Q&A Assistant** — Ask legal questions and get accurate, contextual answers
-- 📚 **Structured Learning Modules** — Topic-based modules covering core legal concepts
-- ⚖️ **Mock Court Simulation** — Practice courtroom scenarios with AI-driven case dynamics
-- 🔐 **Secure Authentication** — User accounts with role-based access
-- 📦 **Vector Search** — Semantic search over legal documents using `pgvector`
+- 📄 **AI Document Analysis** — Upload and analyze legal contracts, agreements, and documents using LLM-powered insights. Includes OCR for scanned PDFs.
+- ✍️ **Legal Document Generator** — Automatically generate fully structured, legally sound contracts (Rental, Employment, NDA, etc.) under Indian law with exact citations.
+- 💬 **Legal Q&A Assistant** — Ask legal questions and get accurate, contextual answers formatted beautifully in Markdown.
+- 📚 **Structured Learning Modules** — Topic-based modules covering core legal concepts.
+- 🏛️ **Mock Court Simulation** — Practice courtroom scenarios with AI-driven case dynamics.
+- 🔒 **Secure Authentication** — User accounts with role-based access.
 
 ---
 
@@ -21,43 +21,30 @@
 |-------------|--------------------------------------|
 | Frontend     | Next.js 16, React 19, TypeScript, Tailwind CSS |
 | Backend      | FastAPI (Python), Uvicorn            |
-| Database     | PostgreSQL + `pgvector` extension    |
-| AI / LLM     | Groq API                             |
-| Containerization | Docker, Docker Compose           |
+| Database     | PostgreSQL + SQLite (dev fallback)   |
+| AI / LLM     | Groq API (Llama 3) / OCR.Space       |
 
 ---
 
-## 📁 Project Structure
+## 📂 Project Structure
 
 ```
 Vidhi/
 ├── frontend/        # Next.js frontend application
 │   ├── app/         # App Router pages & components
 │   └── public/      # Static assets
-├── backend/         # FastAPI backend service
-│   ├── routers/     # API route handlers
-│   ├── services/    # Business logic & AI integrations
-│   ├── utils/       # Utility functions
-│   └── main.py      # Application entrypoint
-├── docker-compose.yml
-└── RUN_PROCEDURE.txt
+└── backend/         # FastAPI backend service
+    ├── routers/     # API route handlers
+    ├── services/    # Business logic & AI integrations
+    ├── utils/       # Utility functions
+    └── main.py      # Application entrypoint
 ```
 
 ---
 
-## ⚡ Quick Start
+## 🚀 Quick Start
 
-### Option 1: Docker (Recommended)
-
-```bash
-docker-compose up --build
-```
-
-- **Frontend:** http://localhost:3000
-- **Backend API:** http://localhost:8000
-- **API Docs (Swagger):** http://localhost:8000/docs
-
-### Option 2: Manual Setup
+### Manual Setup
 
 #### Backend
 

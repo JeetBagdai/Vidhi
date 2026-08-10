@@ -2,8 +2,7 @@
 fastapi
 uvicorn
 sqlmodel
-psycopg2-binary
-pgvector
+python-dotenv
 python-multipart
 python-jose[cryptography]
 passlib[bcrypt]

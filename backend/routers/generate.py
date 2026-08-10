@@ -43,12 +43,27 @@ Return a JSON object:
   "applicable_acts": ["<list of Indian acts cited>"],
   "warnings": ["<any important disclaimers or missing information>"]
 }}
-
 Return ONLY JSON, no markdown.
+IMPORTANT: You must properly escape all newlines inside JSON string values as \n. Do NOT use literal unescaped newlines.
+IMPORTANT: Do NOT use invalid JSON escape sequences like \'. Just use regular single quotes ' inside your text.
 """
     raw = ask_gemini(prompt)
-    clean = raw.strip().lstrip("```json").lstrip("```").rstrip("```").strip()
+    clean = raw.strip()
+    if "```json" in clean:
+        clean = clean.split("```json")[1].split("```")[0]
+    elif "```" in clean:
+        clean = clean.split("```")[1]
+        
+    start = clean.find("{")
+    end = clean.rfind("}")
+    if start != -1 and end != -1:
+        clean = clean[start:end+1]
+        
+    clean = clean.replace('\\\n', '\\n')
+    clean = clean.replace("\\'", "'")
+    
     try:
-        return json.loads(clean)
-    except Exception:
+        return json.loads(clean, strict=False)
+    except Exception as e:
+        print(f"JSON Parse Error: {e}")
         return {"title": req.doc_type, "document": clean, "key_clauses": [], "applicable_acts": [], "warnings": ["AI response could not be parsed as structured JSON."]}

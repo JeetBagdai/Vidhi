@@ -5,164 +5,209 @@ import Navbar from '../../components/Navbar';
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 interface FlaggedClause {
-    clause_title: string;
-    clause_excerpt: string;
-    risk_level: 'High' | 'Medium' | 'Low';
-    issue: string;
-    act_citation: string;
-    counter_suggestion: string;
+  clause_title: string; clause_excerpt: string;
+  risk_level: 'High' | 'Medium' | 'Low';
+  issue: string; act_citation: string; counter_suggestion: string;
 }
-
 interface AnalysisResult {
-    risk_score: number;
-    summary: string;
-    flagged_clauses: FlaggedClause[];
-    missing_clauses: string[];
-    overall_assessment: string;
-    filename: string;
+  risk_score: number; summary: string;
+  flagged_clauses: FlaggedClause[]; missing_clauses: string[];
+  overall_assessment: string; filename: string;
 }
 
-const riskColors = { High: '#ef4444', Medium: '#f59e0b', Low: '#22c55e' };
-const riskBg = { High: '#450a0a', Medium: '#451a03', Low: '#052e16' };
+const RISK_COLOR  = { High: 'var(--accent-red)',   Medium: 'var(--accent-gold)',   Low: 'var(--accent-green)' };
+const RISK_BADGE  = { High: 'badge-red',            Medium: 'badge-gold',           Low: 'badge-green' };
+const RISK_BG     = { High: 'rgba(185,28,28,0.06)', Medium: 'rgba(180,83,9,0.06)',  Low: 'rgba(4,120,87,0.06)' };
+const RISK_BORDER = { High: 'rgba(185,28,28,0.22)', Medium: 'rgba(180,83,9,0.22)',  Low: 'rgba(4,120,87,0.22)' };
 
 export default function ContractAnalyzePage() {
-    const [file, setFile] = useState<File | null>(null);
-    const [context, setContext] = useState('');
-    const [loading, setLoading] = useState(false);
-    const [result, setResult] = useState<AnalysisResult | null>(null);
-    const [expanded, setExpanded] = useState<number | null>(null);
-    const fileRef = useRef<HTMLInputElement>(null);
+  const [file, setFile] = useState<File | null>(null);
+  const [context, setContext] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<AnalysisResult | null>(null);
+  const [expanded, setExpanded] = useState<number | null>(null);
+  const [dragOver, setDragOver] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
-    const handleAnalyze = async () => {
-        if (!file) return;
-        setLoading(true);
-        setResult(null);
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('context', context);
-        try {
-            const res = await fetch(`${API}/contracts/analyze?context=${encodeURIComponent(context)}`, {
-                method: 'POST',
-                body: formData,
-            });
-            const data = await res.json();
-            setResult(data);
-        } catch (e) {
-            alert('Analysis failed. Check backend is running.');
-        } finally {
-            setLoading(false);
-        }
-    };
+  const handleAnalyze = async () => {
+    if (!file) return;
+    setLoading(true); setResult(null);
+    const fd = new FormData();
+    fd.append('file', file); fd.append('context', context);
+    try {
+      const res = await fetch(`${API}/contracts/analyze?context=${encodeURIComponent(context)}`, { method: 'POST', body: fd });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(`Analysis failed: ${data.detail || 'Server error'}`);
+        return;
+      }
+      setResult(data);
+    } catch { alert('Analysis failed. Check backend is running.'); }
+    finally { setLoading(false); }
+  };
 
-    const scoreColor = (s: number) => s > 70 ? '#ef4444' : s > 40 ? '#f59e0b' : '#22c55e';
+  const scoreColor = (s: number) => s > 70 ? 'var(--accent-red)' : s > 40 ? 'var(--accent-gold)' : 'var(--accent-green)';
 
-    return (
-        <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg,#0a0a1a 0%,#0d1117 100%)', color: '#e2e8f0', fontFamily: 'Inter,sans-serif' }}>
-            <Navbar />
-            <div style={{ maxWidth: 900, margin: '0 auto', padding: '40px 20px' }}>
-                <h1 style={{ fontSize: 32, fontWeight: 800, background: 'linear-gradient(90deg,#a78bfa,#60a5fa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', marginBottom: 8 }}>
-                    Contract Analysis
-                </h1>
-                <p style={{ color: '#94a3b8', marginBottom: 32 }}>Upload a contract. Get AI-powered risk flags, Indian law citations, and negotiation counters.</p>
+  return (
+    <div className="page" style={{ overflow: 'hidden', height: '100vh' }}>
+      <Navbar />
 
-                <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: 16, padding: 28, marginBottom: 24 }}>
-                    <div
-                        onClick={() => fileRef.current?.click()}
-                        style={{ border: '2px dashed #334155', borderRadius: 12, padding: '40px 20px', textAlign: 'center', cursor: 'pointer', marginBottom: 20, transition: 'border-color 0.2s', background: file ? '#0d1f0d' : 'transparent' }}
-                        onMouseEnter={e => (e.currentTarget.style.borderColor = '#a78bfa')}
-                        onMouseLeave={e => (e.currentTarget.style.borderColor = '#334155')}
-                    >
-                        <div style={{ fontSize: 40, marginBottom: 8 }}>📄</div>
-                        <div style={{ fontWeight: 600 }}>{file ? `✅ ${file.name}` : 'Click to upload PDF, DOCX, or image'}</div>
-                        <div style={{ color: '#64748b', fontSize: 13, marginTop: 4 }}>Supports PDF, DOCX, JPG, PNG</div>
-                    </div>
-                    <input ref={fileRef} type="file" accept=".pdf,.docx,.jpg,.jpeg,.png" onChange={e => setFile(e.target.files?.[0] || null)} style={{ display: 'none' }} />
-
-                    <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: '#94a3b8' }}>Contract Context (optional but recommended)</label>
-                    <textarea
-                        value={context}
-                        onChange={e => setContext(e.target.value)}
-                        placeholder="e.g. Employment contract between startup and senior engineer in Bangalore..."
-                        rows={3}
-                        style={{ width: '100%', background: '#1e293b', border: '1px solid #334155', borderRadius: 8, padding: '10px 14px', color: '#e2e8f0', fontSize: 14, resize: 'vertical', boxSizing: 'border-box' }}
-                    />
-
-                    <button
-                        onClick={handleAnalyze}
-                        disabled={!file || loading}
-                        style={{ marginTop: 16, width: '100%', padding: '14px', borderRadius: 10, border: 'none', background: file && !loading ? 'linear-gradient(90deg,#7c3aed,#2563eb)' : '#1e293b', color: '#fff', fontWeight: 700, fontSize: 16, cursor: file && !loading ? 'pointer' : 'not-allowed', transition: 'opacity 0.2s' }}
-                    >
-                        {loading ? '🔍 Analyzing with Gemini AI...' : '⚡ Analyze Contract'}
-                    </button>
-                </div>
-
-                {result && (
-                    <div>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16, marginBottom: 24 }}>
-                            <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: 12, padding: 20, textAlign: 'center' }}>
-                                <div style={{ fontSize: 48, fontWeight: 900, color: scoreColor(result.risk_score) }}>{result.risk_score}</div>
-                                <div style={{ color: '#94a3b8', fontSize: 13 }}>Risk Score / 100</div>
-                            </div>
-                            <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: 12, padding: 20, textAlign: 'center' }}>
-                                <div style={{ fontSize: 48, fontWeight: 900, color: '#a78bfa' }}>{result.flagged_clauses?.length || 0}</div>
-                                <div style={{ color: '#94a3b8', fontSize: 13 }}>Flagged Clauses</div>
-                            </div>
-                            <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: 12, padding: 20, textAlign: 'center' }}>
-                                <div style={{ fontSize: 48, fontWeight: 900, color: '#f59e0b' }}>{result.missing_clauses?.length || 0}</div>
-                                <div style={{ color: '#94a3b8', fontSize: 13 }}>Missing Clauses</div>
-                            </div>
-                        </div>
-
-                        <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: 12, padding: 20, marginBottom: 20 }}>
-                            <h3 style={{ color: '#60a5fa', marginBottom: 8 }}>📋 Document Summary</h3>
-                            <p style={{ color: '#cbd5e1', lineHeight: 1.6 }}>{result.summary}</p>
-                        </div>
-
-                        {result.flagged_clauses?.length > 0 && (
-                            <div style={{ marginBottom: 20 }}>
-                                <h3 style={{ color: '#ef4444', marginBottom: 12 }}>🚩 Flagged Clauses</h3>
-                                {result.flagged_clauses.map((c, i) => (
-                                    <div key={i} style={{ border: `1px solid ${riskColors[c.risk_level]}40`, borderRadius: 12, marginBottom: 12, overflow: 'hidden' }}>
-                                        <div
-                                            onClick={() => setExpanded(expanded === i ? null : i)}
-                                            style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 20px', background: riskBg[c.risk_level], cursor: 'pointer' }}
-                                        >
-                                            <div>
-                                                <span style={{ fontWeight: 700, marginRight: 10 }}>{c.clause_title}</span>
-                                                <span style={{ background: riskColors[c.risk_level], color: '#000', borderRadius: 20, padding: '2px 10px', fontSize: 12, fontWeight: 700 }}>{c.risk_level}</span>
-                                            </div>
-                                            <span style={{ color: '#64748b' }}>{expanded === i ? '▲' : '▼'}</span>
-                                        </div>
-                                        {expanded === i && (
-                                            <div style={{ padding: '16px 20px', background: '#0a0f1a' }}>
-                                                <div style={{ background: '#1e293b', borderRadius: 8, padding: '10px 14px', marginBottom: 12, fontStyle: 'italic', color: '#94a3b8', fontSize: 13 }}>"{c.clause_excerpt}"</div>
-                                                <div style={{ marginBottom: 10 }}><span style={{ color: '#ef4444', fontWeight: 600 }}>⚠️ Issue: </span><span style={{ color: '#cbd5e1' }}>{c.issue}</span></div>
-                                                <div style={{ marginBottom: 10 }}><span style={{ color: '#a78bfa', fontWeight: 600 }}>📖 Law: </span><span style={{ color: '#a78bfa', fontStyle: 'italic' }}>{c.act_citation}</span></div>
-                                                <div style={{ background: '#052e16', border: '1px solid #22c55e40', borderRadius: 8, padding: 12 }}>
-                                                    <div style={{ color: '#22c55e', fontWeight: 600, marginBottom: 4 }}>✅ Counter-Suggestion:</div>
-                                                    <div style={{ color: '#cbd5e1', fontSize: 14 }}>{c.counter_suggestion}</div>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-
-                        {result.missing_clauses?.length > 0 && (
-                            <div style={{ background: '#1a1400', border: '1px solid #f59e0b40', borderRadius: 12, padding: 20, marginBottom: 20 }}>
-                                <h3 style={{ color: '#f59e0b', marginBottom: 12 }}>⚠️ Missing Clauses</h3>
-                                {result.missing_clauses.map((mc, i) => <div key={i} style={{ color: '#fcd34d', padding: '4px 0' }}>• {mc}</div>)}
-                            </div>
-                        )}
-
-                        <div style={{ background: '#0f172a', border: '1px solid #334155', borderRadius: 12, padding: 20 }}>
-                            <h3 style={{ color: '#60a5fa', marginBottom: 8 }}>🧑‍⚖️ Overall Assessment</h3>
-                            <p style={{ color: '#cbd5e1', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{result.overall_assessment}</p>
-                        </div>
-                    </div>
-                )}
-            </div>
+      {/* Page header */}
+      <div style={{ padding: '16px clamp(16px,3vw,48px)', borderBottom: '1px solid var(--border)', background: 'var(--bg-card)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div>
+          <h1 style={{ fontSize: 22, fontWeight: 800 }}>
+            <span className="grad-text">Contract Analysis</span>
+          </h1>
+          <p style={{ color: 'var(--text-muted)', fontSize: 13, marginTop: 2 }}>Upload a contract for AI risk flags, Indian law citations, and negotiation counters.</p>
         </div>
-    );
+        {result && (
+          <button onClick={() => { setResult(null); setFile(null); }} className="btn btn-ghost btn-sm">Upload New</button>
+        )}
+      </div>
+
+      {/* Body */}
+      <div style={{ display: 'grid', gridTemplateColumns: result ? 'minmax(300px,380px) 1fr' : '1fr', gap: 0, flex: 1, minHeight: 0, overflow: 'hidden' }}>
+
+        {/* Left panel: upload form — hidden after result on narrow screens */}
+        <div style={{
+          borderRight: result ? '1px solid var(--border)' : 'none',
+          background: 'var(--bg-1)',
+          padding: 'clamp(16px,2vw,28px)',
+          overflowY: 'auto',
+          display: 'flex', flexDirection: 'column', gap: 16,
+        }}>
+          {!result && (
+            <div style={{ maxWidth: 560, margin: '0 auto', width: '100%' }}>
+              <h2 style={{ fontSize: 16, fontWeight: 700, marginBottom: 14, color: 'var(--text-secondary)' }}>Upload Document</h2>
+            </div>
+          )}
+
+          <div style={{ maxWidth: result ? '100%' : 560, margin: result ? 0 : '0 auto', width: '100%' }}>
+            <div
+              className={`dropzone${dragOver ? ' drag-over' : ''}${file ? ' has-file' : ''}`}
+              onClick={() => fileRef.current?.click()}
+              onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={e => { e.preventDefault(); setDragOver(false); const f = e.dataTransfer.files[0]; if (f) setFile(f); }}
+              style={{ padding: result ? '28px 20px' : '48px 24px', marginBottom: 14 }}
+            >
+              <div style={{ fontSize: result ? 32 : 44, marginBottom: 8 }}>📄</div>
+              {file ? (
+                <>
+                  <div style={{ fontWeight: 700, color: 'var(--accent-green)', marginBottom: 4, fontSize: 14 }}>✓ {file.name}</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{(file.size / 1024).toFixed(0)} KB · Click to change</div>
+                </>
+              ) : (
+                <>
+                  <div style={{ fontWeight: 600, marginBottom: 4 }}>Drop contract here or click to browse</div>
+                  <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>PDF, DOCX, JPG, PNG</div>
+                </>
+              )}
+            </div>
+            <input ref={fileRef} type="file" accept=".pdf,.docx,.jpg,.jpeg,.png" onChange={e => setFile(e.target.files?.[0] || null)} style={{ display: 'none' }} />
+
+            <div className="field">
+              <label className="field-label">Context (optional)</label>
+              <textarea className="textarea" value={context} onChange={e => setContext(e.target.value)}
+                placeholder="e.g. Employment contract between startup and senior engineer in Bangalore…" rows={result ? 2 : 3} />
+            </div>
+
+            <button onClick={handleAnalyze} disabled={!file || loading} className="btn btn-primary btn-full btn-lg">
+              {loading ? <><span className="pulse">🔍</span> Analyzing…</> : '⚡ Analyze Contract'}
+            </button>
+          </div>
+        </div>
+
+        {/* Right panel: results */}
+        {result && (
+          <div style={{ overflowY: 'auto', padding: 'clamp(16px,2vw,28px)', display: 'flex', flexDirection: 'column', gap: 16, minHeight: 0 }} className="fade-in">
+
+            {/* Score row */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14 }}>
+              <div className="stat-card">
+                <div className="stat-number" style={{ color: scoreColor(result.risk_score) }}>{result.risk_score}</div>
+                <div className="stat-label">Risk Score / 100</div>
+              </div>
+              <div className="stat-card">
+                <div className="stat-number" style={{ color: 'var(--accent-purple)' }}>{result.flagged_clauses?.length || 0}</div>
+                <div className="stat-label">Flagged Clauses</div>
+              </div>
+              <div className="stat-card">
+                <div className="stat-number" style={{ color: 'var(--accent-gold)' }}>{result.missing_clauses?.length || 0}</div>
+                <div className="stat-label">Missing Clauses</div>
+              </div>
+            </div>
+
+            {/* Two-column detail grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: 16 }}>
+              {/* Summary */}
+              <div className="card">
+                <div style={{ color: 'var(--accent-blue)', fontWeight: 700, marginBottom: 10, fontSize: 14 }}>📋 Summary</div>
+                <p style={{ color: 'var(--text-secondary)', lineHeight: 1.7, fontSize: 14 }}>{result.summary}</p>
+              </div>
+
+              {/* Assessment */}
+              <div className="card">
+                <div style={{ color: 'var(--accent-blue)', fontWeight: 700, marginBottom: 10, fontSize: 14 }}>🧑‍⚖️ Overall Assessment</div>
+                <p style={{ color: 'var(--text-secondary)', lineHeight: 1.7, whiteSpace: 'pre-wrap', fontSize: 14 }}>{result.overall_assessment}</p>
+              </div>
+            </div>
+
+            {/* Flagged clauses */}
+            {result.flagged_clauses?.length > 0 && (
+              <div>
+                <h3 style={{ color: 'var(--accent-red)', marginBottom: 12, fontSize: 15, fontWeight: 700 }}>🚩 Flagged Clauses</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {result.flagged_clauses.map((c, i) => (
+                    <div key={i} style={{ background: RISK_BG[c.risk_level], border: `1px solid ${RISK_BORDER[c.risk_level]}`, borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
+                      <div className="accordion-header" onClick={() => setExpanded(expanded === i ? null : i)}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                          <span style={{ fontWeight: 700, fontSize: 14 }}>{c.clause_title}</span>
+                          <span className={`badge ${RISK_BADGE[c.risk_level]}`}>{c.risk_level}</span>
+                        </div>
+                        <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>{expanded === i ? '▲' : '▼'}</span>
+                      </div>
+                      {expanded === i && (
+                        <div className="accordion-body fade-in">
+                          <div style={{ background: 'var(--bg-2)', borderRadius: 'var(--radius-sm)', padding: '10px 14px', marginBottom: 10, fontStyle: 'italic', color: 'var(--text-muted)', fontSize: 13 }}>"{c.clause_excerpt}"</div>
+                          <div style={{ marginBottom: 8, fontSize: 14 }}><span style={{ color: 'var(--accent-red)', fontWeight: 600 }}>⚠ Issue: </span><span style={{ color: 'var(--text-secondary)' }}>{c.issue}</span></div>
+                          <div style={{ marginBottom: 10, fontSize: 14 }}><span style={{ color: 'var(--accent-purple)', fontWeight: 600 }}>📖 Law: </span><span style={{ color: 'var(--accent-purple)', fontStyle: 'italic' }}>{c.act_citation}</span></div>
+                          <div style={{ background: 'rgba(4,120,87,0.07)', border: '1px solid rgba(4,120,87,0.2)', borderRadius: 'var(--radius-sm)', padding: 12 }}>
+                            <div style={{ color: 'var(--accent-green)', fontWeight: 700, marginBottom: 4, fontSize: 13 }}>✓ Counter-Suggestion</div>
+                            <div style={{ color: 'var(--text-secondary)', fontSize: 13 }}>{c.counter_suggestion}</div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Missing clauses */}
+            {Array.isArray(result.missing_clauses) && result.missing_clauses.filter(Boolean).length > 0 && (
+              <div className="card" style={{ borderColor: 'rgba(180,83,9,0.3)', background: 'rgba(180,83,9,0.04)', flexShrink: 0 }}>
+                <h3 style={{ color: 'var(--accent-gold)', marginBottom: 12, fontSize: 15 }}>⚠️ Missing Clauses</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(220px,1fr))', gap: 8 }}>
+                  {result.missing_clauses.filter(Boolean).map((mc, i) => (
+                    <div key={i} style={{ color: 'var(--accent-gold)', fontSize: 13, display: 'flex', gap: 6 }}>
+                      <span>·</span><span>{String(mc)}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* Scroll spacer to prevent bottom clipping */}
+            <div style={{ height: 24, flexShrink: 0 }} />
+          </div>
+        )}
+
+        {/* Center placeholder when no result */}
+        {!result && !loading && (
+          <div style={{ display: 'none' }} />
+        )}
+      </div>
+    </div>
+  );
 }
